@@ -1,91 +1,110 @@
 import React, { useEffect, useState } from 'react';
-import { Text, View, StyleSheet, Dimensions, ScrollView } from 'react-native';
+import { ActivityIndicator, View, StyleSheet, Dimensions, ScrollView } from 'react-native';
 import {getPopularMovies, getUpcomingMovies, getPopularTv, getFamilyMovies, getDocumentaryMovies} from '../services/services';
 import {SliderBox} from 'react-native-image-slider-box';
 import List from '../components/List';
 
 const dimentions = Dimensions.get('screen')
 const Home = () => {
-  const [moviesImages, setMoviesImages] = useState('');
-  const [poplularMovies, setPopularMovies] = useState('');
-  const [poplularTv, setPopularTv] = useState('');
-  const [familyMovies, setFamilyMovies] = useState('');
-  const [documentaryMovies, setDocumentaryMovies] = useState('');
+  const [moviesImages, setMoviesImages] = useState();
+  const [popularMovies, setPopularMovies] = useState();
+  const [poplularTv, setPopularTv] = useState();
+  const [familyMovies, setFamilyMovies] = useState();
+  const [documentaryMovies, setDocumentaryMovies] = useState();
 
   const [error, setError] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  const getData = () => {
+    return Promise.all([
+      getUpcomingMovies(),
+      getPopularMovies(),
+      getPopularTv(),
+      getFamilyMovies(),
+      getDocumentaryMovies(),
+    ]);
+  };
+
   useEffect(() => {
-    getUpcomingMovies().then(movies => {
-      const moviesImagesArray = [];
-      movies.forEach(movie => {
-        moviesImagesArray.push('https://image.tmdb.org/t/p/w500/'+movie.poster_path)
-      });
-
-      setMoviesImages(moviesImagesArray);
-    }).catch(err => {
-        setError(err)
-    });
-
-    getPopularMovies()
-      .then(movies => {
-        setPopularMovies(movies);
-    }).catch(err => {
-        setError(err)
-    });
-
-    getPopularTv()
-      .then(movies => {
-        setPopularTv(movies);
-    }).catch(err => {
-        setError(err)
-    });
     
-    getFamilyMovies()
-      .then(movies => {
-        setFamilyMovies(movies);
-    }).catch(err => {
-        setError(err)
-    });
+    getData()
+      .then(
+      ([
+        upcomingMoviesData, 
+        popularMoviesData, 
+        poplularTvData, 
+        familyMoviesData, 
+        documentaryMoviesData,
+      ]) => {
+        const moviesImagesArray = [];
+        upcomingMoviesData.forEach(movie => {
+          moviesImagesArray.push('https://image.tmdb.org/t/p/w500/'+movie.poster_path)
+        });
 
-    getDocumentaryMovies()
-      .then(movies => {
-        setDocumentaryMovies(movies);
-    }).catch(err => {
-        setError(err)
+          setMoviesImages(moviesImagesArray);
+          setPopularMovies(popularMoviesData);
+          setPopularTv(poplularTvData);
+          setFamilyMovies(familyMoviesData);
+          setDocumentaryMovies(documentaryMoviesData);
+        }
+    )
+    .catch(err => {
+      setError(error)
+    })
+    .finally(() => {
+      setLoaded(true);
     });
-
-  }, []);
+  
+  },
+   []);
 
   
   
   
   return (
     <React.Fragment>
+    {loaded && (
       <ScrollView>
-      <View style={styles.sliderContainer}>
-        <SliderBox 
-          images={moviesImages} 
-          dotStyle={styles.sliderStyle}
-          sliderBoxHeight={dimentions.height / 1.5} 
-          autoplay={true} 
-          circleLoop={true} />
-      </View>
-      
-      <View style={styles.carousel}>
-        <List title="Popular Movies" content={poplularMovies}/>
-      </View>
-      <View style={styles.carousel}>
-        <List title="Popular Shows" content={poplularTv}/>
-      </View>
-      <View style={styles.carousel}>
-        <List title="Family Movies" content={familyMovies}/>
-      </View>
-      <View style={styles.carousel}>
-        <List title="Documentaries" content={documentaryMovies}/>
-      </View>
-      </ScrollView>
+        { moviesImages && (
+          <View style={styles.sliderContainer}>
+            <SliderBox 
+              images={moviesImages} 
+              dotStyle={styles.sliderStyle}
+              sliderBoxHeight={dimentions.height / 1.5} 
+              autoplay={true} 
+              circleLoop={true} />
+          </View>
+        )}
+        {popularMovies && (
+          <View style={styles.carousel}>
+            <List title="Popular Movies" content={popularMovies}/>
+          </View>
+          )}
+        {poplularTv && (
+          <View style={styles.carousel}>
+            <List title="Popular Shows" content={poplularTv}/>
+          </View>
+          )}
+        {familyMovies && (
+          <View style={styles.carousel}>
+            <List title="Family Movies" content={familyMovies}/>
+          </View>
+          )}
+        {documentaryMovies && (
+          <View style={styles.carousel}>
+            <List title="Documentaries" content={documentaryMovies}/>
+          </View>
+          )}
+        
+        </ScrollView>
+      )} 
+        {!loaded &&(<ActivityIndicator size='large' color='red' />)}
     </React.Fragment>
   );
+  
+ 
 };
+
 
 const styles = StyleSheet.create({
   
