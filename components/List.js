@@ -4,13 +4,13 @@ import Card from './Card';
 import PropTypes from 'prop-types';
 
 const propTypes = {
-  item: PropTypes.object,
-  content: PropTypes.object,
+  item: PropTypes.string,
+  content: PropTypes.array,
 }
 
 class List extends React.PureComponent {
   render() {
-    const {title, content} = this.props
+    const {navigation, title, content} = this.props
     return (
       <View style={styles.list}>
         <View>
@@ -20,7 +20,7 @@ class List extends React.PureComponent {
           <FlatList
             data={content}
             horizontal={true}
-            renderItem={({item}) => <Card item={item}/>}
+            renderItem={({item}) => <Card navigation={navigation} item={item}/>}
             >
 
           </FlatList>
@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
   },
 })
   
-List.PropTypes = propTypes;
+List.propTypes = propTypes;
 
 
 export default List;

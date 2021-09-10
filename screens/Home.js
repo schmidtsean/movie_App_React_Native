@@ -3,9 +3,10 @@ import { ActivityIndicator, View, StyleSheet, Dimensions, ScrollView } from 'rea
 import {getPopularMovies, getUpcomingMovies, getPopularTv, getFamilyMovies, getDocumentaryMovies} from '../services/services';
 import {SliderBox} from 'react-native-image-slider-box';
 import List from '../components/List';
+import Error from '../components/Error';
 
 const dimentions = Dimensions.get('screen')
-const Home = () => {
+const Home = ({navigation}) => {
   const [moviesImages, setMoviesImages] = useState();
   const [popularMovies, setPopularMovies] = useState();
   const [poplularTv, setPopularTv] = useState();
@@ -48,8 +49,8 @@ const Home = () => {
           setDocumentaryMovies(documentaryMoviesData);
         }
     )
-    .catch(err => {
-      setError(error)
+    .catch(() => {
+      setError(true)
     })
     .finally(() => {
       setLoaded(true);
@@ -63,7 +64,7 @@ const Home = () => {
   
   return (
     <React.Fragment>
-    {loaded && (
+    {loaded && !error && (
       <ScrollView>
         { moviesImages && (
           <View style={styles.sliderContainer}>
@@ -77,28 +78,29 @@ const Home = () => {
         )}
         {popularMovies && (
           <View style={styles.carousel}>
-            <List title="Popular Movies" content={popularMovies}/>
+            <List navigation={navigation} title="Popular Movies" content={popularMovies}/>
           </View>
           )}
         {poplularTv && (
           <View style={styles.carousel}>
-            <List title="Popular Shows" content={poplularTv}/>
+            <List navigation={navigation} title="Popular Shows" content={poplularTv}/>
           </View>
           )}
         {familyMovies && (
           <View style={styles.carousel}>
-            <List title="Family Movies" content={familyMovies}/>
+            <List navigation={navigation} title="Family Movies" content={familyMovies}/>
           </View>
           )}
         {documentaryMovies && (
           <View style={styles.carousel}>
-            <List title="Documentaries" content={documentaryMovies}/>
+            <List navigation={navigation} title="Documentaries" content={documentaryMovies}/>
           </View>
           )}
         
         </ScrollView>
       )} 
         {!loaded &&(<ActivityIndicator size='large' color='red' />)}
+        {error && <Error />}
     </React.Fragment>
   );
   
